@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Configurar el entorno
+export LD_LIBRARY_PATH=${LIBTORCH_PATH}/lib:$LD_LIBRARY_PATH
+
+# Ejecutar la aplicación FastAPI con Uvicorn
+exec uvicorn main:app --host 0.0.0.0 --port 8080
