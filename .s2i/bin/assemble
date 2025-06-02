@@ -5,12 +5,7 @@ cd /tmp/src
 
 # Instalar dependencias del sistema
 dnf install -y gcc-c++ python3.12-devel unzip && \
-dnf clean all
-
-# Copiar libtorch desde el PVC al directorio temporal si no existe
-if [ ! -d "/tmp/libtorch" ]; then
-    cp -r /opt/app-root/src/libtorch /tmp/libtorch
-fi
+    dnf clean all
 
 # Instalar dependencias de Python
 python3.12 -m ensurepip && \
@@ -20,17 +15,17 @@ python3.12 -m ensurepip && \
 # Instalar pybind11
 python3.12 -m pip install pybind11
 
-# Compilar el módulo C++ usando libtorch desde el directorio temporal
+# Compilar el módulo C++ usando libtorch desde el PVC
 g++ -shared -fPIC -o googlenet.so main.cpp \
     -I/usr/local/lib/python3.12/site-packages/pybind11/include \
-    -I/tmp/libtorch/include \
-    -I/tmp/libtorch/include/torch/csrc/api/include \
+    -I/opt/app-root/src/libtorch/include \
+    -I/opt/app-root/src/libtorch/include/torch/csrc/api/include \
     -I/usr/include/python3.12 \
-    -L/tmp/libtorch/lib \
+    -L/opt/app-root/src/libtorch/lib \
     -ltorch -ltorch_cpu -lc10 \
     -std=c++17 \
-    -Wl,-rpath,/tmp/libtorch/lib
-   
+    -Wl,-rpath,/opt/app-root/src/libtorch/lib
+
 # Copiar los archivos necesarios al directorio de runtime
 mkdir -p /opt/app-root/src
 mkdir -p /opt/app-root/src/data
