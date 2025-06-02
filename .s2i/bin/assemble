@@ -36,11 +36,6 @@ mkdir -p /opt/app-root/src
 mkdir -p /opt/app-root/src/data
 cp googlenet.so /opt/app-root/src/
 cp main.py /opt/app-root/src/
-# No copiamos googlenet.pt ni imagenet_classes.txt porque están en el PVC
-# cp googlenet.pt /opt/app-root/src/
-# cp carbrands.pt /opt/app-root/src/
-# cp imagenet_classes.txt /opt/app-root/src/
-# cp car_brands.txt /opt/app-root/src/
 
 # Configurar permisos
 chmod +x /opt/app-root/src/main.py
