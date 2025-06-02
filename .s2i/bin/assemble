@@ -4,8 +4,13 @@
 cd /tmp/src
 
 # Instalar dependencias del sistema
-dnf install -y gcc-c++ python3.12-devel unzip && \
+dnf install -y gcc-c++ python3.12-devel unzip tar && \
     dnf clean all
+
+# Descomprimir libtorch.tar desde el PVC
+if [ ! -d "/opt/app-root/src/data/libtorch" ]; then
+    tar -xvf /opt/app-root/src/data/libtorch.tar -C /opt/app-root/src/data/
+fi
 
 # Instalar dependencias de Python
 python3.12 -m ensurepip && \
@@ -18,21 +23,24 @@ python3.12 -m pip install pybind11
 # Compilar el módulo C++ usando libtorch desde el PVC
 g++ -shared -fPIC -o googlenet.so main.cpp \
     -I/usr/local/lib/python3.12/site-packages/pybind11/include \
-    -I/opt/app-root/src/libtorch/include \
-    -I/opt/app-root/src/libtorch/include/torch/csrc/api/include \
+    -I/opt/app-root/src/data/libtorch/include \
+    -I/opt/app-root/src/data/libtorch/include/torch/csrc/api/include \
     -I/usr/include/python3.12 \
-    -L/opt/app-root/src/libtorch/lib \
+    -L/opt/app-root/src/data/libtorch/lib \
     -ltorch -ltorch_cpu -lc10 \
     -std=c++17 \
-    -Wl,-rpath,/opt/app-root/src/libtorch/lib
+    -Wl,-rpath,/opt/app-root/src/data/libtorch/lib
 
 # Copiar los archivos necesarios al directorio de runtime
 mkdir -p /opt/app-root/src
 mkdir -p /opt/app-root/src/data
 cp googlenet.so /opt/app-root/src/
 cp main.py /opt/app-root/src/
-#cp googlenet.pt /opt/app-root/src/
-#cp imagenet_classes.txt /opt/app-root/src/
+# No copiamos googlenet.pt ni imagenet_classes.txt porque están en el PVC
+# cp googlenet.pt /opt/app-root/src/
+# cp carbrands.pt /opt/app-root/src/
+# cp imagenet_classes.txt /opt/app-root/src/
+# cp car_brands.txt /opt/app-root/src/
 
 # Configurar permisos
 chmod +x /opt/app-root/src/main.py
