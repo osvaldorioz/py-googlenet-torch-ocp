@@ -31,8 +31,8 @@ mkdir -p /opt/app-root/src
 mkdir -p /opt/app-root/src/data
 cp googlenet.so /opt/app-root/src/
 cp main.py /opt/app-root/src/
-cp googlenet.pt /opt/app-root/src/
-cp imagenet_classes.txt /opt/app-root/src/
+#cp googlenet.pt /opt/app-root/src/
+#cp imagenet_classes.txt /opt/app-root/src/
 
 # Configurar permisos
 chmod +x /opt/app-root/src/main.py
