@@ -4,14 +4,12 @@
 cd /tmp/src
 
 # Instalar dependencias del sistema
-dnf install -y gcc-c++ python3.12-devel wget unzip && \
-    dnf clean all
+dnf install -y gcc-c++ python3.12-devel unzip && \
+dnf clean all
 
-# Descargar e instalar libtorch
-if [ ! -d "${LIBTORCH_PATH}" ]; then
-    wget -q https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-shared-with-deps-2.3.0%2Bcpu.zip -O libtorch.zip && \
-    unzip libtorch.zip -d /opt && \
-    rm libtorch.zip
+# Copiar libtorch desde el PVC al directorio temporal si no existe
+if [ ! -d "/tmp/libtorch" ]; then
+    cp -r /opt/app-root/src/libtorch /tmp/libtorch
 fi
 
 # Instalar dependencias de Python
@@ -22,19 +20,20 @@ python3.12 -m ensurepip && \
 # Instalar pybind11
 python3.12 -m pip install pybind11
 
-# Compilar el módulo C++
+# Compilar el módulo C++ usando libtorch desde el directorio temporal
 g++ -shared -fPIC -o googlenet.so main.cpp \
     -I/usr/local/lib/python3.12/site-packages/pybind11/include \
-    -I${LIBTORCH_PATH}/include \
-    -I${LIBTORCH_PATH}/include/torch/csrc/api/include \
+    -I/tmp/libtorch/include \
+    -I/tmp/libtorch/include/torch/csrc/api/include \
     -I/usr/include/python3.12 \
-    -L${LIBTORCH_PATH}/lib \
+    -L/tmp/libtorch/lib \
     -ltorch -ltorch_cpu -lc10 \
     -std=c++17 \
-    -Wl,-rpath,${LIBTORCH_PATH}/lib
-
+    -Wl,-rpath,/tmp/libtorch/lib
+   
 # Copiar los archivos necesarios al directorio de runtime
 mkdir -p /opt/app-root/src
+mkdir -p /opt/app-root/src/data
 cp googlenet.so /opt/app-root/src/
 cp main.py /opt/app-root/src/
 cp googlenet.pt /opt/app-root/src/
